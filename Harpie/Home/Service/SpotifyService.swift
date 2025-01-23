@@ -41,7 +41,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
             } catch {
                 // Handle errors
                 print("get acess token error", error)
-                throw error
+                throw SpotifyError.failedAppToken
             }
     }
     
@@ -66,7 +66,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
             return (accessToken, userDetails)
         } catch {
             print("Authentication or data fetching failed: \(error)")
-            throw error
+            throw SpotifyError.failedAuthentication
         }
     }
     
@@ -129,7 +129,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
         } catch {
             // Handle errors
             print("get acess token error", error)
-            throw error
+            throw SpotifyError.failedAccessToken
         }
     }
     
@@ -149,7 +149,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
             return response
         } catch {
             print("get USER DETAILS ERROR", error)
-            throw error
+            throw SpotifyError.failedUserDetails
         }
     }
     
@@ -175,7 +175,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
             return response            
         } catch {
             print("create PLAYLIST ERROR", error)
-            throw error
+            throw SpotifyError.failedCreatePlaylist
         }
     }
     
@@ -217,7 +217,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
             return !response.tracks.items.isEmpty ? response.tracks.items[0].id : ""
         } catch {
             print("validate spotify track \(track) failed: ", error)
-            throw error
+            throw SpotifyError.failedValidateTrack
         }
     }
     
@@ -246,7 +246,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
         } catch {
             // Handle errors
             print("get access token from refresh token error", error)
-            throw error
+            throw SpotifyError.failedRefreshToken
         }
     }
     
@@ -278,7 +278,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
         } catch {
             // Handle errors
             print("add to playlist error", error)
-            throw error
+            throw SpotifyError.failedAddToPlaylist
         }
     }
 }

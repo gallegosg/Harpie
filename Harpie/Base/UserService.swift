@@ -17,8 +17,7 @@ struct UserService {
     
     func fetchUserInfo() -> UserInfo? {
         do {
-            let allUserInfo = try modelContext.fetch(FetchDescriptor<UserInfo>())
-            print("All UserInfo objects: \(allUserInfo)")
+            let _ = try modelContext.fetch(FetchDescriptor<UserInfo>())
         } catch {
             print("Error fetching UserInfo objects: \(error)")
         }
@@ -81,5 +80,17 @@ struct UserService {
     
     func isUserLoggedIn() -> Bool {
         return fetchUserInfo() != nil
+    }
+    
+    func setDailyLimitCount(for count: Int) {
+        UserDefaults.standard.set(count, forKey: K.dailyLimitKey)
+    }
+    
+    func getDailyLimitCount() -> Int {
+        return UserDefaults.standard.integer(forKey: "randomkey")
+    }
+    
+    func isDailyLimitPresentInUserDefaults() -> Bool {
+        return UserDefaults.standard.object(forKey: K.dailyLimitKey) != nil
     }
 }

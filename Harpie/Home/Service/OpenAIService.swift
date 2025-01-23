@@ -20,21 +20,23 @@ struct OpenAIService {
             
             let result = try await openAI.chats(query: query)
             
-            if let first = result.choices.first,
-               let responseString = first.message.content?.string,
-               let cleanedData = responseString.data(using: .utf8) {
-                let playlistResponse = try JSONDecoder().decode(PlaylistResponse.self, from: cleanedData)
-                return (playlistResponse, responseString)
+            if let first = result.choices.first {
+                if let responseString = first.message.content?.string, let cleanedData = responseString.data(using: .utf8) {
+                        let playlistResponse = try JSONDecoder().decode(PlaylistResponse.self, from: cleanedData)
+                        return (playlistResponse, responseString)
+                    } else {
+                        throw OpenAIError.invalidResponse
+                    }
             } else {
-                throw NSError(domain: "OpenAIError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response from OpenAI"])
+                throw OpenAIError.noResults
             }
         } catch {
             print(error)
-            throw error
+            throw OpenAIError.serverError
         }
     }
     
-    func getMore(for value: String, times: Int, history: [ChatQuery.ChatCompletionMessageParam]) async throws -> PlaylistResponse {
+    func getMore(for value: String, times: Int, history: [ChatQuery.ChatCompletionMessageParam]) async throws -> (PlaylistResponse, String) {
 
         let messages = [
             .init(role: .system, content: Config.prompt)!,
@@ -46,17 +48,19 @@ struct OpenAIService {
             
             let result = try await openAI.chats(query: query)
             
-            if let first = result.choices.first,
-               let responseString = first.message.content?.string,
-               let cleanedData = responseString.data(using: .utf8) {
-                let playlistResponse = try JSONDecoder().decode(PlaylistResponse.self, from: cleanedData)
-                return playlistResponse
+            if let first = result.choices.first {
+                if let responseString = first.message.content?.string, let cleanedData = responseString.data(using: .utf8) {
+                        let playlistResponse = try JSONDecoder().decode(PlaylistResponse.self, from: cleanedData)
+                    return (playlistResponse, responseString)
+                    } else {
+                        throw OpenAIError.invalidResponse
+                    }
             } else {
-                throw NSError(domain: "OpenAIError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response from OpenAI"])
+                throw OpenAIError.noResults
             }
         } catch {
             print(error)
-            throw error
+            throw OpenAIError.serverError
         }
     }
 }

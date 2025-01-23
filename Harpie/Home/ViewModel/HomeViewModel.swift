@@ -18,42 +18,49 @@ class HomeViewModel: ObservableObject {
     
     private let auth: Auth
     @Published var isInitialized: Bool = false
-    @Published var searchText: String = "Dummy Test"
+    @Published var searchText: String = ""
 
     @Published var error: String? {
         didSet {
-            isLoading = false
+            if error != nil {
+                isShowingError = true
+            }
         }
     }
     @Published var isLoading: Bool = false
+    
     @Published var moreLoading: Bool = false
-    @Published var playlist: [Song] = PlaylistResponse.dummy.playlist
-    @Published var message: String = PlaylistResponse.dummy.message
+    @Published var playlist: [Song] = [] //PlaylistResponse.dummy.playlist
+    @Published var message: String = "" //PlaylistResponse.dummy.message
     @Published var moreCount: Int = 0
     private var playlistStringArray: [ChatQuery.ChatCompletionMessageParam] = []
+    @Published var isShowingError: Bool = false
     
     @Published var accessToken: String = ""
+    
+    @Published var isUserLoggedIn: Bool = false
     
     init(service: OpenAIService, spotifyService: SpotifyService, auth: Auth, userService: UserService?){
         self.service = service
         self.spotifyService = spotifyService
         self.auth = auth
         self.userService = userService
+        
     }
     
     func initialize() {
         isInitialized = true
+
+        updateIsUserLoggedIn()
     }
     
     func fetchAIList() async throws -> (PlaylistResponse, String) {
         error = nil
-
         do {
+//            throw SpotifyError.failedAccessToken
             let (response, playlistString) = try await service.getPlaylist(for: searchText)
-            
             return (response, playlistString)
         } catch {
-            self.error = error.localizedDescription
             throw error
         }
     }
@@ -71,8 +78,11 @@ class HomeViewModel: ObservableObject {
         moreLoading = true
         defer { moreLoading = false }
         do {
-            let response = try await service.getMore(for: searchText, times: moreCount, history: playlistStringArray)
+            let (response, playlistString) = try await service.getMore(for: searchText, times: moreCount, history: playlistStringArray)
+            
+            //TODO: get playlistString and append to playlistStringArray
             playlist = playlist + response.playlist
+            playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: playlistString)!)
         } catch {
             self.error = error.localizedDescription
         }
@@ -100,16 +110,15 @@ class HomeViewModel: ObservableObject {
     }
     
     func handleGenerateButton() async {
-        DispatchQueue.main.async {
-            self.isLoading = true
-                
-        }
+        enableLoading()
+        error = nil
         defer { isLoading = false }
 
         do {
             // 1. hit openai
+            print("hit openai")
             let (response, playlistString) = try await fetchAIList()
-            
+            print("openai finished")
             // 2. check duplicates
             let newPlaylist = handleDuplicates(for: response.playlist)
             
@@ -131,6 +140,9 @@ class HomeViewModel: ObservableObject {
             message = response.message
 
             playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: playlistString)!)
+        } catch let error as SpotifyError {
+            self.error = error.errorMessage
+            print(error)
         } catch {
             self.error = error.localizedDescription
         }
@@ -139,8 +151,7 @@ class HomeViewModel: ObservableObject {
     func handleAddToSpotifyButton() async {
         do {
             guard let userService = userService else { fatalError("UserService not injected") }
-            print(auth.checkIfLoggedIn(), userService.isUserLoggedIn())
-            if auth.checkIfLoggedIn(), userService.isUserLoggedIn() {
+            if isUserLoggedIn {
                 //get refresh token
                 if let refreshToken = auth.retrieveRefreshToken(), let user = userService.fetchUserInfo() {
                     //get accesstoken
@@ -152,7 +163,6 @@ class HomeViewModel: ObservableObject {
                     
                     handleSendToSpotify(playlistURL: playlistResponse.externalUrls.spotify)
                 }
-
             } else {
                 let (accessToken, user) = try await spotifyService.authenticateAndFetchSpotifyUser()
                 //save user
@@ -167,7 +177,10 @@ class HomeViewModel: ObservableObject {
                 
                 handleSendToSpotify(playlistURL: playlistResponse.externalUrls.spotify)
             }
-        } catch {
+            updateIsUserLoggedIn()
+        } catch let error as SpotifyError {
+            self.error = error.errorMessage
+        }  catch {
             print(error)
         }
     }
@@ -186,6 +199,7 @@ class HomeViewModel: ObservableObject {
 
         userService.deleteUserInfo()
         let _ = auth.deleteRefreshToken()
+        updateIsUserLoggedIn()
     }
     
     func handleSendToSpotify(playlistURL: String) {
@@ -200,4 +214,18 @@ class HomeViewModel: ObservableObject {
         }
     }
 
+    func enableLoading() {
+        isLoading = true
+    }
+    
+    func updateIsUserLoggedIn() {
+        guard let userService = userService else { fatalError("UserService not injected") }
+        let dailyCount = userService.getDailyLimitCount()
+        print("DAILY COUNT: \(dailyCount)")
+        if auth.checkIfLoggedIn(), userService.isUserLoggedIn() {
+            isUserLoggedIn = true
+        } else {
+            isUserLoggedIn = false
+        }
+    }
 }

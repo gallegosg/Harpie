@@ -42,6 +42,7 @@ struct PlaylistView: View {
                             }
                         }
                     }
+                    .scrollIndicators(.hidden)
                     .onReceive(vm.$playlist, perform: { _ in
                         if let lastSong = vm.playlist.last, vm.moreCount != 0 {
                             withAnimation(.smooth(duration: 1)) {
@@ -64,17 +65,21 @@ struct PlaylistView: View {
                 Spacer()
                 ActionButton(action: {
                     Task {
-                        await vm.handleAddToSpotifyButton()                        
+                        await vm.handleAddToSpotifyButton()
                     }
                 }, type: .spotify)
                 Spacer()
             }
             .padding(.vertical, 10)
-        }    }
+        }
+        .alert("Error", isPresented: $vm.isShowingError) {} message: {
+            Text(vm.error ?? "Something went wrong")
+        }
+    }
 }
 
 #Preview {
     @Previewable @Environment(\.modelContext) var modelContext
-
+    
     PlaylistView(vm: HomeViewModel(service: OpenAIService(), spotifyService: SpotifyService(), auth: Auth(), userService: UserService(context: modelContext)))
 }
