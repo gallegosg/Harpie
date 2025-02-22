@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct PlaylistResponse: Decodable {
+struct PlaylistResponse: Codable {
     let message: String
     let sentiments: [String]
     let playlist: [Song]
 }
 
-struct Song: Identifiable, Decodable, Equatable, Hashable {
+struct Song: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
     let title: String
     let artist: String

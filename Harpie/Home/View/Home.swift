@@ -14,8 +14,17 @@ struct Home: View {
     var body: some View {
         VStack {
             Spacer()
-            if vm.isLoading {
-                ProgressView()
+            if vm.isLoading || vm.shouldScatter {
+                ZStack {
+                    StarsView(shouldScatter: $vm.shouldScatter)
+                    ProgressView()
+                        .foregroundStyle(.white)
+                }
+                .onChange(of: vm.shouldScatter) { old, new in
+                    if !new {
+                        vm.disableLoading()
+                    }
+                }
             } else if vm.playlist.isEmpty {
                 VStack {
                     VStack {

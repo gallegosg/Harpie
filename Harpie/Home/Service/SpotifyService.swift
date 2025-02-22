@@ -14,36 +14,36 @@ import AuthenticationServices
 class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding {
     let auth = Auth()
     
-    func fetchSpotifyAppToken() async throws -> String{
-        // Define the URL for Spotify's token API
-            let url = "https://accounts.spotify.com/api/token"
-            
-            // Prepare the parameters for the POST request
-            let parameters: [String: String] = [
-                "grant_type": "client_credentials",
-                "client_id": Config.clientID,
-                "client_secret": Config.clientSecret
-            ]
-            
-            // Make the POST request using Alamofire with async/await
-            let headers: HTTPHeaders = [
-                "Content-Type": "application/x-www-form-urlencoded"
-            ]
-            
-            do {
-                let response = try await AF.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers)
-                    .validate()
-                    .serializingDecodable(Token.self)
-                    .value
-                
-                // Return the access token
-                return response.accessToken
-            } catch {
-                // Handle errors
-                print("get acess token error", error)
-                throw SpotifyError.failedAppToken
-            }
-    }
+//    func fetchSpotifyAppToken() async throws -> String{
+//        // Define the URL for Spotify's token API
+//            let url = "https://accounts.spotify.com/api/token"
+//            
+//            // Prepare the parameters for the POST request
+//            let parameters: [String: String] = [
+//                "grant_type": "client_credentials",
+//                "client_id": Config.clientID,
+//                "client_secret": Config.clientSecret
+//            ]
+//            
+//            // Make the POST request using Alamofire with async/await
+//            let headers: HTTPHeaders = [
+//                "Content-Type": "application/x-www-form-urlencoded"
+//            ]
+//            
+//            do {
+//                let response = try await AF.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers)
+//                    .validate()
+//                    .serializingDecodable(Token.self)
+//                    .value
+//                
+//                // Return the access token
+//                return response.accessToken
+//            } catch {
+//                // Handle errors
+//                print("get acess token error", error)
+//                throw SpotifyError.failedAppToken
+//            }
+//    }
     
     
     private func generateRandomString(length: Int) -> String {
@@ -60,6 +60,8 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
             let callbackURLScheme = "harpie"
             
             let authorizationCode = try await authenticateWithSpotify(authURL: authURL, callbackURLScheme: callbackURLScheme)
+            
+            //from here, hit node api
             let accessToken = try await getAccessToken(code: authorizationCode)
             let userDetails = try await getUserDetails(accessToken: accessToken)
             
@@ -97,41 +99,41 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
     }
     
     // get accesstoken from login
-    func getAccessToken(code: String) async throws -> String {
-        let url = "https://accounts.spotify.com/api/token"
-        
-        // Prepare the parameters for the POST request
-        let parameters: [String: String] = [
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": Config.redirectURI,
-        ]
-        
-        // Make the POST request using Alamofire with async/await
-        let headers: HTTPHeaders = [
-            "Authorization": "Basic " + stringToBase64(string: "\(Config.clientID):\(Config.clientSecret)"),
-            "Content-Type": "application/x-www-form-urlencoded"
-        ]
-        
-        do {
-            let response = try await AF.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers)
-                .validate()
-                .serializingDecodable(Token.self)
-                .value
-            
-            guard let refreshToken = response.refreshToken else {
-                fatalError("No refresh token")
-            }
-            let result = auth.saveRefreshToken(refreshToken)
-            print("refreshtoken saveed: \(result)")
-            // Return the access token
-            return response.accessToken
-        } catch {
-            // Handle errors
-            print("get acess token error", error)
-            throw SpotifyError.failedAccessToken
-        }
-    }
+//    func getAccessToken(code: String) async throws -> String {
+//        let url = "https://accounts.spotify.com/api/token"
+//        
+//        // Prepare the parameters for the POST request
+//        let parameters: [String: String] = [
+//            "grant_type": "authorization_code",
+//            "code": code,
+//            "redirect_uri": Config.redirectURI,
+//        ]
+//        
+//        // Make the POST request using Alamofire with async/await
+//        let headers: HTTPHeaders = [
+//            "Authorization": "Basic " + stringToBase64(string: "\(Config.clientID):\(Config.clientSecret)"),
+//            "Content-Type": "application/x-www-form-urlencoded"
+//        ]
+//        
+//        do {
+//            let response = try await AF.request(url, method: .post, parameters: parameters, encoding: URLEncoding.default, headers: headers)
+//                .validate()
+//                .serializingDecodable(Token.self)
+//                .value
+//            
+//            guard let refreshToken = response.refreshToken else {
+//                fatalError("No refresh token")
+//            }
+//            let result = auth.saveRefreshToken(refreshToken)
+//            print("refreshtoken saveed: \(result)")
+//            // Return the access token
+//            return response.accessToken
+//        } catch {
+//            // Handle errors
+//            print("get acess token error", error)
+//            throw SpotifyError.failedAccessToken
+//        }
+//    }
     
     func getUserDetails(accessToken: String) async throws -> UserResponse {
         let url = "https://api.spotify.com/v1/me"
@@ -221,34 +223,99 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
         }
     }
     
-    func getAccessTokenFromRefreshToken(_ refreshToken: String) async throws -> String {
-        let url = "https://accounts.spotify.com/api/token"
-        // Prepare the parameters for the POST request
-        let body: [String: String] = [
-            "grant_type": "refresh_token",
-            "refresh_token": refreshToken,
-            "client_id": Config.clientID
-        ]
-        
-        // Make the POST request using Alamofire with async/await
-        let headers: HTTPHeaders = [
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + stringToBase64(string: "\(Config.clientID):\(Config.clientSecret)")
-        ]
-        do {
-            let response = try await AF.request(url, method: .post, parameters: body, encoding: URLEncoding.default, headers: headers)
-                .validate()
-                .serializingDecodable(Token.self)
-                .value
-
-            // Return the access token
-            return response.accessToken
-        } catch {
-            // Handle errors
-            print("get access token from refresh token error", error)
-            throw SpotifyError.failedRefreshToken
-        }
+    struct CreatePlaylistRequest: Codable {
+        let refreshToken: String
+        let playlistName: String
+        let userId: String
+        let songList: [Song]
     }
+    
+    func createPlaylistAuth(refreshToken: String, playlistName: String, userId: String, songList: [Song]) async throws -> CreatePlaylistResponse {
+        let urlString = "\(Config.apiUrl)spotify/createPlaylistAuth"
+        
+        guard let url = URL(string: urlString) else {
+            throw URLError(.badURL)
+        }
+
+        do {
+            let token = try await FirebaseService.shared.validateAppCheckToken()
+
+            guard !token.isEmpty else {
+                print("App Check token is empty")
+                throw OpenAIError.invalidResponse // TODO: Firebase error
+            }
+
+            // Create the request
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            
+            let requestBody = CreatePlaylistRequest(refreshToken: refreshToken, playlistName: playlistName, userId: userId, songList: songList)
+            request.httpBody = try JSONEncoder().encode(requestBody)
+            // Perform the request
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            // Validate response
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw URLError(.badServerResponse)
+            }
+
+            if (200...299).contains(httpResponse.statusCode) {
+                // Success, convert response to string
+                guard let jsonString = String(data: data, encoding: .utf8) else {
+                    throw URLError(.cannotParseResponse)
+                }
+
+                let playlistResponse = try JSONDecoder().decode(CreatePlaylistResponse.self, from: data)
+                return playlistResponse
+            } else {
+                // Extract API error message if available
+                if let apiError = try? JSONDecoder().decode(NodeAPIError.self, from: data) {
+                    throw OpenAIError.apiError(apiError.error)
+                } else {
+                    throw OpenAIError.apiError("Unknown error")
+                }
+            }
+            
+        } catch let error as OpenAIError {
+            print(error)
+            throw error
+        } catch {
+            print(error)
+            throw OpenAIError.invalidResponse
+        }
+        
+    }
+    
+//    func getAccessTokenFromRefreshToken(_ refreshToken: String) async throws -> String {
+//        let url = "https://accounts.spotify.com/api/token"
+//        // Prepare the parameters for the POST request
+//        let body: [String: String] = [
+//            "grant_type": "refresh_token",
+//            "refresh_token": refreshToken,
+//            "client_id": Config.clientID
+//        ]
+//        
+//        // Make the POST request using Alamofire with async/await
+//        let headers: HTTPHeaders = [
+//            "Content-Type": "application/x-www-form-urlencoded",
+//            "Authorization": "Basic " + stringToBase64(string: "\(Config.clientID):\(Config.clientSecret)")
+//        ]
+//        do {
+//            let response = try await AF.request(url, method: .post, parameters: body, encoding: URLEncoding.default, headers: headers)
+//                .validate()
+//                .serializingDecodable(Token.self)
+//                .value
+//
+//            // Return the access token
+//            return response.accessToken
+//        } catch {
+//            // Handle errors
+//            print("get access token from refresh token error", error)
+//            throw SpotifyError.failedRefreshToken
+//        }
+//    }
     
     func addSongToPlaylist(playlistId: String, songList: [Song], accessToken: String) async throws {
         let url = "https://api.spotify.com/v1/playlists/\(playlistId)/tracks"

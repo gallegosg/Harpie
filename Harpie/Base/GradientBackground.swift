@@ -59,27 +59,30 @@ struct GradientBackground: View {
     @State private var angle: Double = 0
     @State private var color1: Color = .red
     @State private var color2: Color = .purple
-    
+
     var body: some View {
-        GeometryReader { geometry in
-            let center = UnitPoint.center
+        ZStack {
             
-            AngularGradient(
-                gradient: Gradient(colors: [color1, color2, color1]),
-                center: center,
-                angle: .degrees(angle)
-            )
-            .ignoresSafeArea()
-            .animation(.linear(duration: 10).repeatForever(autoreverses: false), value: angle)
-            .onAppear {
-                // Start spinning animation
-                angle = 360
+            GeometryReader { geometry in
+                let center = UnitPoint.center
                 
-                // Animate color changes smoothly
-                Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
-                    withAnimation(.easeInOut(duration: 5)) {
-                        color1 = Color.random
-                        color2 = Color.random
+                AngularGradient(
+                    gradient: Gradient(colors: [color1, color2, color1]),
+                    center: center,
+                    angle: .degrees(angle)
+                )
+                .ignoresSafeArea()
+                .animation(.linear(duration: 10).repeatForever(autoreverses: false), value: angle)
+                .onAppear {
+                    // Start spinning animation
+                    angle = 360
+                    
+                    // Animate color changes smoothly
+                    Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
+                        withAnimation(.easeInOut(duration: 5)) {
+                            color1 = Color.random
+                            color2 = Color.random
+                        }
                     }
                 }
             }

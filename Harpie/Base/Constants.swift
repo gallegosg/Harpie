@@ -8,7 +8,7 @@
 import Foundation
 
 struct K {
-    static let moreLimit = 1
+    static let moreLimit = 10
     
     static let dailyLimit = 3
     static let dailyLimitKey = "DailyLimit"

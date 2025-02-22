@@ -11,6 +11,8 @@ enum OpenAIError: Error {
     case invalidResponse
     case noResults
     case serverError
+    case apiError(String)
+    case networkError(String)
     
     var errorMessage: String {
         switch self {
@@ -20,6 +22,10 @@ enum OpenAIError: Error {
             return "No results were returned."
         case .serverError:
             return "An error occurred on the server."
+        case .apiError(let message):
+            return message
+        case .networkError(let error):
+            return error
         }
     }
 }

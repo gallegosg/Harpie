@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		49B3FE6F2D065B1E00FD2A93 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 49B3FE6E2D065B1E00FD2A93 /* OpenAI */; };
 		49B3FE722D07862700FD2A93 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 49B3FE712D07862700FD2A93 /* Alamofire */; };
+		49F141D12D5D50A7004A50C1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 49F141D02D5D50A7004A50C1 /* FirebaseAnalytics */; };
+		49F141D32D5D50A7004A50C1 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 49F141D22D5D50A7004A50C1 /* FirebaseAppCheck */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,8 +72,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49F141D32D5D50A7004A50C1 /* FirebaseAppCheck in Frameworks */,
 				49B3FE6F2D065B1E00FD2A93 /* OpenAI in Frameworks */,
 				49B3FE722D07862700FD2A93 /* Alamofire in Frameworks */,
+				49F141D12D5D50A7004A50C1 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -134,6 +138,8 @@
 			packageProductDependencies = (
 				49B3FE6E2D065B1E00FD2A93 /* OpenAI */,
 				49B3FE712D07862700FD2A93 /* Alamofire */,
+				49F141D02D5D50A7004A50C1 /* FirebaseAnalytics */,
+				49F141D22D5D50A7004A50C1 /* FirebaseAppCheck */,
 			);
 			productName = Harpie;
 			productReference = 49B3FE3D2D065A3400FD2A93 /* Harpie.app */;
@@ -220,6 +226,7 @@
 			packageReferences = (
 				49B3FE6D2D065B1E00FD2A93 /* XCRemoteSwiftPackageReference "OpenAI" */,
 				49B3FE702D07862700FD2A93 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				49F141CF2D5D50A7004A50C1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 49B3FE3E2D065A3400FD2A93 /* Products */;
@@ -606,6 +613,14 @@
 				minimumVersion = 5.10.2;
 			};
 		};
+		49F141CF2D5D50A7004A50C1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.8.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -618,6 +633,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 49B3FE702D07862700FD2A93 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		49F141D02D5D50A7004A50C1 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49F141CF2D5D50A7004A50C1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		49F141D22D5D50A7004A50C1 /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49F141CF2D5D50A7004A50C1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAppCheck;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
