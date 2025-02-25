@@ -44,7 +44,8 @@ struct ActionButton: View {
                 case .reset:
                     VStack {
                         Image(systemName: "arrow.counterclockwise")
-                        Text("Reset")
+                        Text("Start")
+                        Text("Over")
                     }
                 case .more(let count):
                     VStack {

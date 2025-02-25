@@ -12,88 +12,83 @@ struct Home: View {
     @State private var showAlert: Bool = false
     
     var body: some View {
-        VStack {
-            Spacer()
-            if vm.isLoading || vm.shouldScatter {
-                ZStack {
-                    StarsView(shouldScatter: $vm.shouldScatter)
-                    ProgressView()
-                        .foregroundStyle(.white)
-                }
-                .onChange(of: vm.shouldScatter) { old, new in
-                    if !new {
-                        vm.disableLoading()
-                    }
-                }
-            } else if vm.playlist.isEmpty {
-                VStack {
-                    VStack {
-                        Spacer()
-                        Text("Music Find")
-                            .foregroundStyle(.white)
-                            .font(.custom("AvenirNext-Medium", size: 40))
-                            .fontWeight(.bold)
-                            .padding(.bottom, 10)
-                        Text("Just type in a feeling, mood or genre and we'll generate a playlist for you!")
-                            .foregroundStyle(.white)
-                            .font(.title3)
-                            .fontWeight(.medium)
-                            .padding()
-                        Spacer()
-                        
-                    }
-                    .multilineTextAlignment(.center)
-                    
-                    VStack {
-                        TextField(
-                            "What are you in the mood for?",
-                            text: $vm.searchText
-                        )
-                        .multilineTextAlignment(.center)
-                        .textInputAutocapitalization(.never)
-                        .disableAutocorrection(true)
-                        .border(.secondary)
-                        .textFieldStyle(.roundedBorder)
-                        .padding(.bottom, 30)
-                        .onChange(of: vm.searchText) { oldValue, newValue in
-                            if vm.searchText.count > K.searchTextLimit {
-                                vm.searchText = String(vm.searchText.prefix(K.searchTextLimit))
-                            }
-                        }
-                        
-                        Button("Go") {
-                            Task {
-                                await vm.handleGenerateButton()
-                            }
-                        }
-                        .padding()
-                        .font(.custom("AvenirNext-Medium", size: 20))
-                        .bold()
-                        .foregroundStyle(.white)
-                        .background(Color.clear)
-                        .frame(width: 150, height: 50)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 30)
-                                .stroke(Color.white, lineWidth: 4)
-                        )
-                        Spacer()
-                    }
-                }
-                .alert("Error", isPresented: $vm.isShowingError) {} message: {
-                    Text(vm.error ?? "Something went wrong")
-                }
-                
-            } else {
-                PlaylistView(vm: vm)
-            }
-            Spacer()
-            HStack {
+        ZStack {
+            StarsView(shouldScatter: $vm.shouldScatter)
+
+            VStack {
                 Spacer()
-                if vm.isUserLoggedIn {
-                    Button ("Logout") {
-                        vm.handleLogoutButton()
+                if vm.isLoading {
+                    MusicLoadingView()
+                } else if vm.playlist.isEmpty {
+                    VStack {
+                        VStack {
+                            Spacer()
+                            Text("Easy Music")
+                                .foregroundStyle(.white)
+                                .font(.custom("AvenirNext-Medium", size: 40))
+                                .fontWeight(.bold)
+                                .padding(.bottom, 10)
+                            Text("Just type in a feeling, mood or genre and we'll generate a playlist for you!")
+                                .foregroundStyle(.white)
+                                .font(.title3)
+                                .fontWeight(.medium)
+                                .padding()
+                            Spacer()
+                            
+                        }
+                        .multilineTextAlignment(.center)
+                        
+                        VStack {
+                            TextField(
+                                "What are you in the mood for?",
+                                text: $vm.searchText
+                            )
+                            .multilineTextAlignment(.center)
+                            .textInputAutocapitalization(.never)
+                            .disableAutocorrection(true)
+                            .border(.secondary)
+                            .textFieldStyle(.roundedBorder)
+                            .padding(.bottom, 30)
+                            .onChange(of: vm.searchText) { oldValue, newValue in
+                                if vm.searchText.count > K.searchTextLimit {
+                                    vm.searchText = String(vm.searchText.prefix(K.searchTextLimit))
+                                }
+                            }
+                            
+                            Button("Go") {
+                                Task {
+                                    await vm.handleGenerateButton()
+                                }
+                            }
+                            .padding()
+                            .font(.custom("AvenirNext-Medium", size: 20))
+                            .bold()
+                            .foregroundStyle(.white)
+                            .background(Color.clear)
+                            .frame(width: 150, height: 50)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .stroke(Color.white, lineWidth: 4)
+                            )
+                            Spacer()
+                        }
                     }
-                    .foregroundStyle(.white)
+                    .alert("Error", isPresented: $vm.isShowingError) {} message: {
+                        Text(vm.error ?? "Something went wrong")
+                    }
+                    
+                } else {
+                    PlaylistView(vm: vm)
+                }
+                Spacer()
+                HStack {
+                    Spacer()
+                    if vm.isUserLoggedIn {
+                        Button ("Logout") {
+                            vm.handleLogoutButton()
+                        }
+                        .foregroundStyle(.white)
+                    }
                 }
             }
         }

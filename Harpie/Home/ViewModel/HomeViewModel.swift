@@ -122,6 +122,7 @@ class HomeViewModel: ObservableObject {
         error = nil
         defer {
             shouldScatter = true
+            isLoading = false
         }
 
         do {
@@ -166,37 +167,24 @@ class HomeViewModel: ObservableObject {
         do {
             let songList: [Song] = playlist.filter { $0.checked }
             guard let userService = userService else { fatalError("UserService not injected") }
-            if isUserLoggedIn {
+            if isUserLoggedIn, let refreshToken = auth.retrieveRefreshToken(), let user = userService.fetchUserInfo() {
                 //get refresh token
-                if let refreshToken = auth.retrieveRefreshToken(), let user = userService.fetchUserInfo() {
-                    //get accesstoken
-                    
-                    //hit my api for accesstoken/createplaylist/add songs to playlist
-                    //get back playlistResponse/accessToken
-                    let playlistResponse = try await spotifyService.createPlaylistAuth(refreshToken: refreshToken, playlistName: searchText.capitalized, userId: user.id, songList: songList)
-
-//                    let accessToken = try await spotifyService.getAccessTokenFromRefreshToken(refreshToken)
-//                    // create playlist
-//                    let playlistResponse = try await spotifyService.createPlaylist(accessToken: accessToken, playlistName: searchText.capitalized, userId: user.id)
-//                    //add songs to playlist
-//                    try await spotifyService.addSongToPlaylist(playlistId: playlistResponse.id, songList: songList, accessToken: accessToken)
-                    
-                    handleSendToSpotify(playlistURL: playlistResponse.externalUrls.spotify)
-                }
+                let playlistResponse = try await spotifyService.createPlaylistAuth(refreshToken: refreshToken, playlistName: searchText.capitalized, userId: user.id, songList: songList)
+                
+                handleSendToSpotify(playlistURL: playlistResponse.externalUrls.spotify)
             } else {
-                let (accessToken, user) = try await spotifyService.authenticateAndFetchSpotifyUser()
-                //save user
+                let code = try await spotifyService.authenticateSpotifyUser()
+                let (token, user) = try await spotifyService.getUserDetailsFromCode(code: code)
+                
                 let userInfo = userService.convertUserResponseToUserInfo(user)
                 userService.saveUserInfo(userInfo)
                 
-                //hit my api to create playlist/add songs/auth
-                //get back playlistResponse
-                // create playlist
-                let playlistResponse = try await spotifyService.createPlaylist(accessToken: accessToken, playlistName: searchText.capitalized, userId: user.id)
+                guard let refreshToken = token.refreshToken else {
+                    fatalError("refresh token not found")
+                }
                 
-                //add songs to playlist
-                try await spotifyService.addSongToPlaylist(playlistId: playlistResponse.id, songList: songList, accessToken: accessToken)
-                
+                let playlistResponse = try await spotifyService.createPlaylistAuth(refreshToken: refreshToken, playlistName: searchText.capitalized, userId: user.id, songList: songList)
+
                 handleSendToSpotify(playlistURL: playlistResponse.externalUrls.spotify)
             }
             updateIsUserLoggedIn()
@@ -206,15 +194,6 @@ class HomeViewModel: ObservableObject {
             print(error)
         }
     }
-
-//    func getSpotifyAppToken() async {
-//        do {
-//            let token = try await spotifyService.fetchSpotifyAppToken()
-//            accessToken = token
-//        } catch {
-//            print(error)
-//        }
-//    }
     
     func handleLogoutButton() {
         guard let userService = userService else { fatalError("UserService not injected") }

@@ -25,15 +25,16 @@ struct StarsView: View {
                 updateStarPositions(in: geometry.size)
             }
             .onChange(of: shouldScatter) { old, scatter in
-                            if scatter {
-                                scatterStars(geometry: geometry)
-                            }
-                        }
+                if scatter && geometry.size.width > 0 && geometry.size.height > 0 {
+                    scatterStars(geometry: geometry)
+                }
+            }
         }
     }
 
     private func createStars(in size: CGSize) -> [Star] {
-        (0..<starCount).map { _ in
+        guard size.width > 0, size.height > 0 else { return [] }
+        return (0..<starCount).map { _ in
             Star(
                 id: UUID(),
                 position: CGPoint(
@@ -51,49 +52,42 @@ struct StarsView: View {
     }
     
     private func updateStarPositions(in size: CGSize) {
+        guard size.width > 0, size.height > 0 else { return }
         for index in stars.indices {
-            let newX = stars[index].position.x + stars[index].direction.dx
-            let newY = stars[index].position.y + stars[index].direction.dy
+            var star = stars[index]
+            let newX = star.position.x + star.direction.dx
+            let newY = star.position.y + star.direction.dy
             
-            stars[index].position = CGPoint(
+            // Wrap positions around edges based on visible bounds
+            star.position = CGPoint(
                 x: newX.truncatingRemainder(dividingBy: size.width),
                 y: newY.truncatingRemainder(dividingBy: size.height)
             )
-            
-            // Keep positions within bounds
-            if stars[index].position.x < 0 { stars[index].position.x += size.width }
-            if stars[index].position.y < 0 { stars[index].position.y += size.height }
+            if star.position.x < 0 { star.position.x += size.width }
+            if star.position.y < 0 { star.position.y += size.height }
+            stars[index] = star
         }
     }
     
-    // Scatter stars quickly
+    // Scatter stars once and continue from there
     private func scatterStars(geometry: GeometryProxy) {
+        let size = geometry.size
+        guard size.width > 0, size.height > 0 else { return }
+        
         for index in stars.indices {
-            let scatterX = CGFloat.random(in: -geometry.size.width..<geometry.size.width * 5)
-            let scatterY = CGFloat.random(in: -geometry.size.height..<geometry.size.height * 5)
+            var star = stars[index]
+            let scatterX = star.position.x + CGFloat.random(in: -size.width...size.width * 2)
+            let scatterY = star.position.y + CGFloat.random(in: -size.height...size.height * 2)
             
-            // Move to scatter position
-            withAnimation(Animation.easeOut(duration: scatterSpeed)) {
-                stars[index].position = CGPoint(x: scatterX, y: scatterY)
+            withAnimation(.easeOut(duration: scatterSpeed)) {
+                star.position = CGPoint(x: scatterX, y: scatterY)
+                stars[index] = star
             }
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + scatterSpeed - 0.1) {
+        // Reset shouldScatter after scattering, no forced return
+        DispatchQueue.main.asyncAfter(deadline: .now() + scatterSpeed) {
             shouldScatter = false
-        }
-        
-        // Return to normal after scattering
-        DispatchQueue.main.asyncAfter(deadline: .now() + scatterSpeed * 2) {
-            withAnimation(Animation.easeIn(duration: scatterSpeed)) {
-                for index in stars.indices {
-                    let newX = CGFloat.random(in: 0..<geometry.size.width)
-                    let newY = CGFloat.random(in: 0..<geometry.size.height)
-                    stars[index].position = CGPoint(x: newX, y: newY)
-                }
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + scatterSpeed * 2) {
-                shouldScatter = false
-            }
         }
     }
 }

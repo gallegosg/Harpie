@@ -19,16 +19,8 @@ struct PlaylistView: View {
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
             }
-            if vm.moreLoading || vm.shouldScatter {
-                ZStack {
-                    StarsView(shouldScatter: $vm.shouldScatter)
-                    ProgressView()
-                }
-                .onChange(of: vm.shouldScatter) { old, new in
-                    if !new {
-                        vm.disableLoading()
-                    }
-                }
+            if vm.moreLoading {
+                MusicLoadingView()
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
