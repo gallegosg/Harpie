@@ -34,5 +34,5 @@ struct SongView: View {
 }
 
 #Preview {
-    SongView(song: .constant(Song.init(id: UUID(), title: "Three Little Birds", artist: "Bob Marley")))
+    SongView(song: .constant(Song(title: "Wake Me Up", artist: "Avicii", checked: true, spotifyId: "0nrRP2bk19rLc0orkWPQk2")))
 }

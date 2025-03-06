@@ -18,14 +18,14 @@ struct Song: Identifiable, Codable, Equatable, Hashable {
     let title: String
     let artist: String
     var checked: Bool = true
-    var spotifyId: String?
+    var spotifyId: String
     
     static func ==(lhs: Song, rhs: Song) -> Bool {
         return lhs.title == rhs.title && lhs.artist == rhs.artist && lhs.id == rhs.id
     }
     
     enum CodingKeys: String, CodingKey {
-            case title, artist
+            case title, artist, spotifyId
         }
 }
 

@@ -30,11 +30,8 @@ struct UserService {
     func saveUserInfo(_ newUserInfo: UserInfo) {
         if let existingUserInfo = fetchUserInfo() {
             // Update existing instance
-            existingUserInfo.country = newUserInfo.country
             existingUserInfo.displayName = newUserInfo.displayName
-            existingUserInfo.email = newUserInfo.email
             existingUserInfo.href = newUserInfo.href
-            existingUserInfo.product = newUserInfo.product
             existingUserInfo.type = newUserInfo.type
             existingUserInfo.uri = newUserInfo.uri
             existingUserInfo.profileImage = newUserInfo.profileImage
@@ -56,17 +53,14 @@ struct UserService {
     func convertUserResponseToUserInfo(_ userResponse: UserResponse) -> UserInfo {
         return UserInfo(
             id: userResponse.id,
-            country: userResponse.country,
             displayName: userResponse.displayName,
-            email: userResponse.email,
             href: userResponse.href,
             profileImage: userResponse.images.first?.url ?? "",
-            product: userResponse.product,
             type: userResponse.type,
             uri: userResponse.uri
         )
     }
-    
+
     func deleteUserInfo() {
         if let userInfo = fetchUserInfo() {
             modelContext.delete(userInfo)
@@ -80,17 +74,5 @@ struct UserService {
     
     func isUserLoggedIn() -> Bool {
         return fetchUserInfo() != nil
-    }
-    
-    func setDailyLimitCount(for count: Int) {
-        UserDefaults.standard.set(count, forKey: K.dailyLimitKey)
-    }
-    
-    func getDailyLimitCount() -> Int {
-        return UserDefaults.standard.integer(forKey: "randomkey")
-    }
-    
-    func isDailyLimitPresentInUserDefaults() -> Bool {
-        return UserDefaults.standard.object(forKey: K.dailyLimitKey) != nil
     }
 }

@@ -8,26 +8,19 @@
 import SwiftData
 
 struct UserResponse: Codable {
-    var country: String
     var displayName: String
-    var email: String
-    var explicitContent: ExplicitContent
     var externalUrls: ExternalUrls
     var followers: Followers
     var href: String
     var id: String
     var images: [ProfileImage]
-    var product: String
     var type: String
     var uri: String
 
     enum CodingKeys: String, CodingKey {
-        case country
         case displayName = "display_name"
-        case email
-        case explicitContent = "explicit_content"
         case externalUrls = "external_urls"
-        case followers, href, id, images, product, type, uri
+        case followers, href, id, images, type, uri
     }
 }
 

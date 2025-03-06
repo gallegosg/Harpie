@@ -10,6 +10,7 @@ import SwiftData
 struct Home: View {
     @StateObject var vm: HomeViewModel
     @State private var showAlert: Bool = false
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
         ZStack {
@@ -23,7 +24,7 @@ struct Home: View {
                     VStack {
                         VStack {
                             Spacer()
-                            Text("Easy Music")
+                            Text("Quick Mix")
                                 .foregroundStyle(.white)
                                 .font(.custom("AvenirNext-Medium", size: 40))
                                 .fontWeight(.bold)
@@ -43,33 +44,41 @@ struct Home: View {
                                 "What are you in the mood for?",
                                 text: $vm.searchText
                             )
+                            .focused($isTextFieldFocused)
                             .multilineTextAlignment(.center)
                             .textInputAutocapitalization(.never)
                             .disableAutocorrection(true)
                             .border(.secondary)
                             .textFieldStyle(.roundedBorder)
-                            .padding(.bottom, 30)
                             .onChange(of: vm.searchText) { oldValue, newValue in
                                 if vm.searchText.count > K.searchTextLimit {
                                     vm.searchText = String(vm.searchText.prefix(K.searchTextLimit))
                                 }
                             }
                             
-                            Button("Go") {
+                            Text(vm.warningText ?? "")
+                                .padding(.bottom, 30)
+
+                            Button(action: {
+                                isTextFieldFocused = false // Dismiss keyboard first
                                 Task {
+                                    try? await Task.sleep(nanoseconds: 2_000_000)
                                     await vm.handleGenerateButton()
                                 }
+                            }) {
+                                Text("Go")
+                                    .font(.custom("AvenirNext-Medium", size: 20))
+                                    .bold()
+                                    .foregroundStyle(.white)
+                                    .frame(width: 100, height: 15) // Move frame inside the label
                             }
                             .padding()
-                            .font(.custom("AvenirNext-Medium", size: 20))
-                            .bold()
-                            .foregroundStyle(.white)
                             .background(Color.clear)
-                            .frame(width: 150, height: 50)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 30)
+                                RoundedRectangle(cornerRadius: 50)
                                     .stroke(Color.white, lineWidth: 4)
                             )
+                            
                             Spacer()
                         }
                     }

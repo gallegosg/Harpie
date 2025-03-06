@@ -50,7 +50,8 @@ struct ActionButton: View {
                 case .more(let count):
                     VStack {
                         Image(systemName: "plus")
-                        Text("More")
+                        Text("Add More")
+                        Text("Songs")
                         Text("\(K.moreLimit - count) left")
                             .font(.subheadline)
                     }

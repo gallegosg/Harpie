@@ -64,3 +64,4 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 Harpie/GoogleService-Info.plist
+Harpie/GoogleService-Info.plist

@@ -1,6 +1,13 @@
 import Firebase
 import FirebaseAppCheck
 
+class YourSimpleAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
+  func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
+      return DeviceCheckProvider(app: app)
+  }
+}
+
+
 struct FirebaseService {
     
     // MARK: - Singleton
@@ -12,14 +19,16 @@ struct FirebaseService {
     func configureFirebase() {
         
         #if DEBUG
-        // Use Debug Provider for App Check during development
-        let providerFactory = AppCheckDebugProviderFactory()
-        AppCheck.setAppCheckProviderFactory(providerFactory)
-        print("Using App Check Debug Provider")
+            // Use Debug Provider for App Check during development
+            let providerFactory = AppCheckDebugProviderFactory()
+            AppCheck.setAppCheckProviderFactory(providerFactory)
+            print("Using App Check Debug Provider")
         #else
-        print("Using default App Check Provider")
+            let providerFactory = YourSimpleAppCheckProviderFactory()
+            AppCheck.setAppCheckProviderFactory(providerFactory)
+            print("Using default App Check Provider")
         #endif
-        
+
         // Initialize Firebase
         FirebaseApp.configure()
 
@@ -39,7 +48,6 @@ struct FirebaseService {
                     continuation.resume(throwing: error)
                     return
                 }
-                
                 continuation.resume(returning: token.token)
             }
         }

@@ -16,6 +16,8 @@ enum SpotifyError: Error {
     case failedCreatePlaylist
     case failedAddToPlaylist
     case failedValidateTrack
+    case userCancelledAuthentication
+    case apiError(String)
     
     var errorMessage: String {
         switch self {
@@ -27,6 +29,9 @@ enum SpotifyError: Error {
         case .failedCreatePlaylist: return "Failed to create playlist."
         case .failedAddToPlaylist: return "Failed to add track to playlist."
         case .failedValidateTrack: return "Failed to validate track."
+        case .userCancelledAuthentication: return "User cancelled authentication."
+        case .apiError(let message):
+            return message
         }
     }
 }

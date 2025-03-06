@@ -23,13 +23,20 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
         do {
             let state = generateRandomString(length: 16)
             let redirectURI = Config.redirectURI
-            let scope = "user-read-private user-read-email playlist-modify-private playlist-modify-public"
+            let scope = "playlist-modify-private playlist-modify-public"
             let authURL = URL(string: "https://accounts.spotify.com/authorize?response_type=code&client_id=\(Config.clientID)&redirect_uri=\(redirectURI)&scope=\(scope)&state=\(state)")!
             let callbackURLScheme = "harpie"
             
             let authorizationCode = try await authenticateWithSpotify(authURL: authURL, callbackURLScheme: callbackURLScheme)
             
             return authorizationCode
+        } catch let error as SpotifyError {
+            switch error {
+            case .userCancelledAuthentication:
+                throw error
+            default:
+                throw SpotifyError.failedAuthentication
+            }
         } catch {
             print("Authentication or data fetching failed: \(error)")
             throw SpotifyError.failedAuthentication
@@ -42,29 +49,38 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
     }
     
     func getUserDetailsFromCode(code: String) async throws -> (Token, UserResponse) {
-        do {
-            let response = try await APIService.request(
-                endpoint: "spotify/getUserFromAuthCode",
-                queryParameters: ["code": code],
-                responseType: UserDetailResponse.self
-            )
-            
-            guard let refreshToken = response.token.refreshToken else {
-                fatalError("No refresh token")
-            }
-            let result = auth.saveRefreshToken(refreshToken)
-            print("refreshtoken saveed: \(result)")
-            
-            // Return the access token
-            return (response.token, response.user)
-        } catch let error as OpenAIError {
-            print(error)
-            throw error
-        } catch {
-            print(error)
-            throw OpenAIError.invalidResponse
-        }
+        let (response, _) = try await APIService.request(
+            endpoint: "spotify/getUserFromAuthCode",
+            queryParameters: ["code": code],
+            responseType: UserDetailResponse.self
+        )
+        return (response.token, response.user)
     }
+    
+//    func getUserDetailsFromCode(code: String) async throws -> (Token, UserResponse) {
+//        do {
+//            
+//            let response = try await APIService.request(
+//                endpoint: "spotify/getUserFromAuthCode",
+//                queryParameters: ["code": code],
+//                responseType: UserDetailResponse.self
+//            )
+//            
+//            guard let refreshToken = response.token.refreshToken else {
+//                fatalError("No refresh token")
+//            }
+//            let result = auth.saveRefreshToken(refreshToken)
+//            
+//            // Return the access token
+//            return (response.token, response.user)
+//        } catch let error as NodeAPIError {
+//            print("fucntion node error", error)
+//            throw SpotifyError.apiError(error.errorMessage)
+//        } catch {
+//            print("function generic error", error)
+//            throw OpenAIError.invalidResponse
+//        }
+//    }
     
     func authenticateWithSpotify(authURL: URL, callbackURLScheme: String) async throws -> String {
         return try await withCheckedThrowingContinuation { continuation in
@@ -76,6 +92,10 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
                 return
             }
             let session = ASWebAuthenticationSession(url: updatedAuthURL, callbackURLScheme: callbackURLScheme) { callbackURL, error in
+                if let error = error as? ASWebAuthenticationSessionError, error.code == .canceledLogin {
+                    continuation.resume(throwing: SpotifyError.userCancelledAuthentication)
+                    return
+                }
                 if let callbackURL = callbackURL {
                     let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems
                     if let code = queryItems?.first(where: { $0.name == "code" })?.value {
@@ -84,6 +104,7 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
                         continuation.resume(throwing: URLError(.badServerResponse))
                     }
                 } else if let error = error {
+                    print(error)
                     continuation.resume(throwing: error)
                 }
             }
@@ -188,25 +209,15 @@ class SpotifyService: NSObject, ASWebAuthenticationPresentationContextProviding 
     }
     
     func createPlaylistAuth(refreshToken: String, playlistName: String, userId: String, songList: [Song]) async throws -> CreatePlaylistResponse {
-        do {
-            let requestBody = CreatePlaylistRequest(refreshToken: refreshToken, playlistName: playlistName, userId: userId, songList: songList)
-
-            let response = try await APIService.request(
-                endpoint: "spotify/createPlaylistAuth",
-                method: "POST",
-                body: requestBody,
-                responseType: CreatePlaylistResponse.self
-            )
-            
-            return response
-        } catch let error as OpenAIError {
-            print(error)
-            throw error
-        } catch {
-            print(error)
-            throw OpenAIError.invalidResponse
-        }
+        let requestBody = CreatePlaylistRequest(refreshToken: refreshToken, playlistName: playlistName, userId: userId, songList: songList)
+        let (response, _) =  try await APIService.request(
+            endpoint: "spotify/createPlaylistAuth",
+            method: "POST",
+            body: requestBody,
+            responseType: CreatePlaylistResponse.self
+        )
         
+        return response
     }
 //    
 //    func addSongToPlaylist(playlistId: String, songList: [Song], accessToken: String) async throws {

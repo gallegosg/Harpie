@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MusicLoadingView: View {
+    var customLoadingText: String?
     @State private var amplitudes: [CGFloat] = Array(repeating: 0.5, count: 8)
     @State private var currentTextIndex: Int = 0
     
@@ -42,7 +43,7 @@ struct MusicLoadingView: View {
             }
             
             // Loading text (cycling through array)
-            Text(loadingTexts[currentTextIndex])
+            Text(customLoadingText ?? loadingTexts[currentTextIndex])
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
