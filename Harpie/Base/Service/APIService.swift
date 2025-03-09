@@ -70,6 +70,7 @@ struct APIService {
                     case "invalid_response": code = .invalidResponse
                     case "rate_limit": code = .rateLimit
                     case "invalid_json": code = .invalidJson
+                    case "no_results": code = .noResults
                     default: code = .custom(errorResponse.error.message)
                     }
                     throw APIError.openAI(code)

@@ -67,6 +67,7 @@ enum OpenAIErrorCode {
     case invalidResponse
     case invalidJson
     case rateLimit
+    case noResults
     case custom(String)
     
     var message: String {
@@ -74,6 +75,7 @@ enum OpenAIErrorCode {
         case .invalidResponse: return "Invalid response from the server. Please try again"
         case .invalidJson: return "Invalid response from the server. Please try again"
         case .rateLimit: return "Server request limit reached. Try again later."
+        case .noResults: return "Sorry, we coulnt't find music for that. Try something else."
         case .custom(let msg): return msg
         }
     }

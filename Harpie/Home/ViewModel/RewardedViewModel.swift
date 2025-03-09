@@ -12,12 +12,9 @@ class RewardedViewModel: NSObject, ObservableObject, FullScreenContentDelegate {
     private let playlistManager = PlaylistLimitManager()
 
     func loadAd() async {
-        do {
-            
-            let adUnitId = "ca-app-pub-1006149897952583/8250881333" //REAL
-//            let adUnitId = "ca-app-pub-3940256099942544/1712485313" //TEST
+        do {            
             rewardedAd = try await RewardedAd.load(
-                with: adUnitId, request: Request())
+                with: K.adUnitId, request: Request())
             rewardedAd?.fullScreenContentDelegate = self
         } catch {
             print("Failed to load rewarded ad with error: \(error.localizedDescription)")
