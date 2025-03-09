@@ -29,8 +29,14 @@ class HomeViewModel: ObservableObject {
         }
     }
     @Published var warningText: String? = ""
+    @Published var showLimitReached: Bool = false
     
-    @Published var isLoading: Bool = false
+    @Published var isLoading: Bool = false {
+        didSet{
+            updateRemainingCount()
+        }
+    }
+    
     @Published var moreLoading: Bool = false
     @Published var spotifyLoading: Bool = false
     
@@ -48,6 +54,9 @@ class HomeViewModel: ObservableObject {
             }
         }
     }
+    
+    @Published var remainingCount: Int = 0
+    
     @Published var isPlaylistReady: Bool = false
     
     @Published var accessToken: String = ""
@@ -64,7 +73,7 @@ class HomeViewModel: ObservableObject {
     
     func initialize() {
         isInitialized = true
-
+        updateRemainingCount()
         updateIsUserLoggedIn()        
     }
     
@@ -145,9 +154,20 @@ class HomeViewModel: ObservableObject {
         warningText = ""
     }
     
+    func testLogs() async {
+        let decodingError = DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Test decoding  from fake error"))
+        let error = APIError.decodingError(decodingError)
+
+        await ErrorLogger.logAPIError(
+            error,
+            userId: "n/a",
+            context: ["endpoint": "test/logs", "responseString": "status ok", "error": decodingError.localizedDescription]
+        )
+    }
+    
     func handleGenerateButton() async {
         if !playlistManager.canCreatePlaylist() {
-            self.error = "You have ran out of free playlists. Please upgrade to a premium plan or wait until tomorrow."
+            showLimitReached = true
             return
         }
         
@@ -274,4 +294,9 @@ class HomeViewModel: ObservableObject {
             isUserLoggedIn = false
         }
     }
+    
+    func updateRemainingCount() {
+        remainingCount = playlistManager.getRemainingCount()
+    }
+    
 }

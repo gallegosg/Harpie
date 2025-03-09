@@ -22,6 +22,13 @@ struct APIService {
             request.httpBody = try JSONEncoder().encode(body)
         }
         
+        var bodyString: String? = ""
+        
+        if let encodableBody = body {
+            let data = try? JSONEncoder().encode(encodableBody)
+            bodyString = data.flatMap { String(data: $0, encoding: .utf8) }
+        }
+        
         let token = try await FirebaseService.shared.validateAppCheckToken()
 
         guard !token.isEmpty else {
@@ -30,14 +37,14 @@ struct APIService {
         }
 
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+        var responseString: String? = ""
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw APIError.invalidResponse
             }
             
-            let responseString = includeResponseString ? String(data: data, encoding: .utf8) : nil
+            responseString = String(data: data, encoding: .utf8)
             
             if (200...299).contains(httpResponse.statusCode) {
                 let decodedResponse = try JSONDecoder().decode(T.self, from: data)
@@ -70,25 +77,23 @@ struct APIService {
                     throw APIError.node(errorResponse.error.message)
                 }
             }
+        }catch let error as DecodingError {
+            let apiError = APIError.decodingError(error)
+            await ErrorLogger.logAPIError(
+                apiError,
+                userId: "n/a",
+                context: ["endpoint": endpoint, "responseString": responseString ?? "couldnt decode", "body": bodyString ?? "no body", "error": error.localizedDescription]
+            )
+            throw APIError.decodingError(error)
         } catch let error as APIError {
-            print("GONNA LOG IN FIREBASE")
             await ErrorLogger.logAPIError(
                 error,
                 userId: "n/a",
-                context: ["endpoint": endpoint],
+                context: ["endpoint": endpoint, "responseString": responseString ?? "couldnt decode", "body": bodyString ?? "no body", "error": error.localizedDescription],
                 file: "APISERVICE.SWIFT",
                 line: 81
             )
             throw error
-        } catch let error as DecodingError {
-            print(error)
-            let error = APIError.decodingError(error)
-            await ErrorLogger.logAPIError(
-                error,
-                userId: "n/a",
-                context: ["endpoint": endpoint]
-            )
-            throw APIError.decodingError(error)
         } catch {
             throw APIError.networkError(error)
         }

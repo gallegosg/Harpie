@@ -9,8 +9,8 @@ import Foundation
 
 class PlaylistLimitManager {
     private let userDefaults = UserDefaults.standard
-    private let key = K.dailyLimitKey
-    private let dateKey = K.dailyLimitLastDateKey
+    private let key = K.dailyCountKey
+    private let dateKey = K.dailyCountLastDateKey
     private let maxPlaylistsPerDay = K.dailyLimit  // Set your desired limit
 
     func canCreatePlaylist() -> Bool {
@@ -29,13 +29,13 @@ class PlaylistLimitManager {
 
     func recordPlaylistCreation() {
         let today = formattedDate()
-        var count = userDefaults.integer(forKey: key)
         
         // If it's a new day, reset the count
         if userDefaults.string(forKey: dateKey) != today {
             resetDailyCount()
         }
         
+        var count = userDefaults.integer(forKey: key)
         count += 1
         userDefaults.set(count, forKey: key)
         userDefaults.set(today, forKey: dateKey)
@@ -50,5 +50,31 @@ class PlaylistLimitManager {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: Date())
+    }
+    
+    func addPlaylistAllowance() {
+        let today = formattedDate()
+        
+        // If it's a new day, reset the count
+        if userDefaults.string(forKey: dateKey) != today {
+            resetDailyCount()
+        }
+        
+        var count = userDefaults.integer(forKey: key)
+        count -= 1
+        userDefaults.set(count, forKey: key)
+        userDefaults.set(today, forKey: dateKey)
+    }
+    
+    
+    func getRemainingCount() -> Int {
+        let today = formattedDate()
+        // If it's a new day, reset the count
+        if userDefaults.string(forKey: dateKey) != today {
+            resetDailyCount()
+        }
+        
+        let count = userDefaults.integer(forKey: key)
+        return maxPlaylistsPerDay - count
     }
 }

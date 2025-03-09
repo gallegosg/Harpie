@@ -28,7 +28,7 @@ enum APIError: Error {
         case .invalidResponse:
             return "Something went wrong. Try again later."
         case .decodingError:
-            return "Failed to process the response."
+            return "Failed to process the response. Try again later."
         case .node(let message):
             return message
         case .spotify(let code):

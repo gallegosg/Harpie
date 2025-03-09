@@ -10,6 +10,7 @@
 		49B3FE6F2D065B1E00FD2A93 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 49B3FE6E2D065B1E00FD2A93 /* OpenAI */; };
 		49B3FE722D07862700FD2A93 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 49B3FE712D07862700FD2A93 /* Alamofire */; };
 		49C7CD692D793E570024A4D6 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 49C7CD682D793E570024A4D6 /* FirebaseFirestore */; };
+		49C7CD6C2D7BA81C0024A4D6 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 49C7CD6B2D7BA81C0024A4D6 /* GoogleMobileAds */; };
 		49F141D12D5D50A7004A50C1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 49F141D02D5D50A7004A50C1 /* FirebaseAnalytics */; };
 		49F141D32D5D50A7004A50C1 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 49F141D22D5D50A7004A50C1 /* FirebaseAppCheck */; };
 /* End PBXBuildFile section */
@@ -38,7 +39,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4975B24A2D0D408C005EF392 /* Exceptions for "Harpie" folder in "Harpie" target */ = {
+		49C7CD702D7BB1560024A4D6 /* Exceptions for "Harpie" folder in "Harpie" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -51,7 +52,7 @@
 		49B3FE3F2D065A3400FD2A93 /* Harpie */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				4975B24A2D0D408C005EF392 /* Exceptions for "Harpie" folder in "Harpie" target */,
+				49C7CD702D7BB1560024A4D6 /* Exceptions for "Harpie" folder in "Harpie" target */,
 			);
 			path = Harpie;
 			sourceTree = "<group>";
@@ -73,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49C7CD6C2D7BA81C0024A4D6 /* GoogleMobileAds in Frameworks */,
 				49F141D32D5D50A7004A50C1 /* FirebaseAppCheck in Frameworks */,
 				49B3FE6F2D065B1E00FD2A93 /* OpenAI in Frameworks */,
 				49B3FE722D07862700FD2A93 /* Alamofire in Frameworks */,
@@ -143,6 +145,7 @@
 				49F141D02D5D50A7004A50C1 /* FirebaseAnalytics */,
 				49F141D22D5D50A7004A50C1 /* FirebaseAppCheck */,
 				49C7CD682D793E570024A4D6 /* FirebaseFirestore */,
+				49C7CD6B2D7BA81C0024A4D6 /* GoogleMobileAds */,
 			);
 			productName = Harpie;
 			productReference = 49B3FE3D2D065A3400FD2A93 /* Quick Mix.app */;
@@ -230,6 +233,7 @@
 				49B3FE6D2D065B1E00FD2A93 /* XCRemoteSwiftPackageReference "OpenAI" */,
 				49B3FE702D07862700FD2A93 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				49F141CF2D5D50A7004A50C1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				49C7CD6A2D7BA81C0024A4D6 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 49B3FE3E2D065A3400FD2A93 /* Products */;
@@ -430,7 +434,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"Harpie/Preview Content\"";
 				DEVELOPMENT_TEAM = JG2J3QAPHJ;
 				ENABLE_PREVIEWS = YES;
@@ -450,6 +454,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.gerardogallegos.musicgen;
 				PRODUCT_NAME = "Quick Mix";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -464,7 +469,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"Harpie/Preview Content\"";
 				DEVELOPMENT_TEAM = JG2J3QAPHJ;
 				ENABLE_PREVIEWS = YES;
@@ -484,6 +489,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.gerardogallegos.musicgen;
 				PRODUCT_NAME = "Quick Mix";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -622,6 +628,14 @@
 				minimumVersion = 5.10.2;
 			};
 		};
+		49C7CD6A2D7BA81C0024A4D6 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.1.0;
+			};
+		};
 		49F141CF2D5D50A7004A50C1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -647,6 +661,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 49F141CF2D5D50A7004A50C1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		49C7CD6B2D7BA81C0024A4D6 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49C7CD6A2D7BA81C0024A4D6 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
 		};
 		49F141D02D5D50A7004A50C1 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;

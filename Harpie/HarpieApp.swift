@@ -8,21 +8,15 @@
 import SwiftUI
 import SwiftData
 import FirebaseCore
-
-//class AppDelegate: NSObject, UIApplicationDelegate {
-//  func application(_ application: UIApplication,
-//                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-//    FirebaseApp.configure()
-//    return true
-//  }
-//}
+import GoogleMobileAds
 
 @main
 struct HarpieApp: App {
-//    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
     init() {
         FirebaseService.shared.configureFirebase()
+//        let appID = Bundle.main.object(forInfoDictionaryKey: "GADApplicationIdentifier") as? String
+//        print(appID)
+        MobileAds.shared.start(completionHandler: nil)
     }
     
     var body: some Scene {

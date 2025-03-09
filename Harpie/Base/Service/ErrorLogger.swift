@@ -28,16 +28,13 @@ struct ErrorLogger {
         line: Int = #line
     ) async {
         do {
-            print("hit second function")
             let requestBody = ErrorRequestBody(userId: userId, source: source, code: code, message: message, context: context, file: file, line: line)
-            print("made body", requestBody)
             let _ = try await APIService.request(
                 endpoint: "log/error",
                 method: "POST",
                 body: requestBody,
                 responseType: [String: String].self
             )
-            
             print("Error logged to Firestore: \(message)")
         } catch {
             print("Failed to log error to Firestore: \(error.localizedDescription)")
@@ -52,7 +49,6 @@ struct ErrorLogger {
         file: String = #file,
         line: Int = #line
     ) async {
-        print("hit first fucntion")
         let (source, code) = extractSourceAndCode(from: apiError)
         print("exxtract code and source", source, code)
         await logError(

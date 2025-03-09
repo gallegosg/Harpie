@@ -10,9 +10,9 @@ import Foundation
 struct K {
     static let moreLimit = 3
     
-    static let dailyLimit = 20
-    static let dailyLimitKey = "DailyLimit"
-    static let dailyLimitLastDateKey = "DailyLimitLastDate"
+    static let dailyLimit = 10
+    static let dailyCountKey = "DailyLimit"
+    static let dailyCountLastDateKey = "DailyLimitLastDate"
     
     static let searchTextLimit = 35
 }
