@@ -38,7 +38,7 @@ struct ActionButton: View {
                 case .spotify:
                     VStack {
                         Image(systemName: "music.note")
-                        Text("Add to")
+                        Text("Save to")
                         Text("Spotify")
                     }
                 case .reset:

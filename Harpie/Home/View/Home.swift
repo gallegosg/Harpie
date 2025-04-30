@@ -60,15 +60,18 @@ struct Home: View {
                                     vm.searchText = String(vm.searchText.prefix(K.searchTextLimit))
                                 }
                             }
+                            .onSubmit {
+                                Task {
+                                    await handleCreatePlaylistButton()
+                                }
+                            }
                             
                             Text(vm.warningText ?? "")
                                 .padding(.bottom, 30)
                             
                             Button(action: {
-                                isTextFieldFocused = false // Dismiss keyboard first
                                 Task {
-                                    try? await Task.sleep(nanoseconds: 2_000_000)
-                                    await vm.handleGenerateButton()
+                                    await handleCreatePlaylistButton()
                                 }
                             }) {
                                 Text("Create My Mix!")
@@ -91,7 +94,7 @@ struct Home: View {
                             Spacer()
                         }
                     }
-                    .alert("Error", isPresented: $vm.isShowingError) {} message: {
+                    .alert("Oops", isPresented: $vm.isShowingError) {} message: {
                         Text(vm.error ?? "Something went wrong")
                     }
                     .alert(isPresented: $vm.showLimitReached) {
@@ -113,7 +116,7 @@ struct Home: View {
                 HStack {
                     Spacer()
                     if vm.isUserLoggedIn {
-                        Button ("Logout") {
+                        Button ("Logout of Spotify") {
                             vm.handleLogoutButton()
                         }
                         .foregroundStyle(.white)
@@ -131,6 +134,14 @@ struct Home: View {
             title: Text(String(localized: "No Location Access")),
             message: Text(String(localized: "Please authorize location access in Settings")),
             dismissButton: .default(Text(String(localized: "Okay"))))
+    }
+    
+    func handleCreatePlaylistButton() async {
+        isTextFieldFocused = false // Dismiss keyboard first
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000)
+            await vm.handleGenerateButton()
+        }
     }
 }
 

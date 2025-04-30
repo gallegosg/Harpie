@@ -9,6 +9,7 @@ import Foundation
 import OpenAI
 import SwiftData
 import UIKit
+import AVFoundation
 
 @MainActor
 class HomeViewModel: ObservableObject {
@@ -63,6 +64,14 @@ class HomeViewModel: ObservableObject {
     
     @Published var isUserLoggedIn: Bool = false
     
+    
+    
+    // Song Playing
+    @Published var currentlyPlayingSongId: UUID? = nil
+    @Published var isPreviewLoading: Bool = false
+    private var player: AVPlayer?
+ 
+    
     init(service: OpenAIService, spotifyService: SpotifyService, auth: Auth, userService: UserService?){
         self.service = service
         self.spotifyService = spotifyService
@@ -108,8 +117,6 @@ class HomeViewModel: ObservableObject {
     }
     
     func handleMore() {
-        moreCount += 1
-        playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: "more")!)
         Task {
             await fetchMore()
         }
@@ -120,12 +127,14 @@ class HomeViewModel: ObservableObject {
         moreLoading = true
         defer { moreLoading = false }
         do {
-            let (response, playlistString) = try await service.getMoreFromFunction(for: searchText, history: playlistStringArray)
+            let (response, _) = try await service.getMoreFromFunction(for: searchText, history: playlistStringArray)
             
             let duplicateFree = handleDuplicates(for: playlist + response.playlist)
             playlist = duplicateFree
             
-            playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: playlistString)!)
+            playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: "more")!)
+//            playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: playlistString)!)
+            moreCount += 1
         } catch {
             self.error = error.localizedDescription
         }
@@ -185,12 +194,14 @@ class HomeViewModel: ObservableObject {
             }
             
             // 1. hit openai
-            let (response, playlistString) = try await fetchAIList()
+            let (response, _) = try await fetchAIList()
             playlist = response.playlist
             
             message = response.message.isEmpty ? searchText.capitalized : response.message
 
-            playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: playlistString)!)
+            //ADD TO HISTORY FOR "MORE"
+//            playlistStringArray.append(ChatQuery.ChatCompletionMessageParam(role: .user, content: playlistString)!)
+            
             playlistManager.recordPlaylistCreation()
 
         } catch let error as APIError {
@@ -297,6 +308,73 @@ class HomeViewModel: ObservableObject {
     
     func updateRemainingCount() {
         remainingCount = playlistManager.getRemainingCount()
+    }
+    
+    //MARK: - Song Previews
+    
+    struct SongPreviewResponse: Decodable {
+        let songPreviewUrl: String
+    }
+    
+    func fetchPreview(for song: Song) async throws -> String{
+        error = nil
+
+        isPreviewLoading = true
+        defer { isPreviewLoading = false }
+        // Call your API function here
+        let (response, _) = try await APIService.request(
+            endpoint: "applemusic/getSongPreview",
+            method: "GET",
+            queryParameters: ["title": song.title, "artist": song.artist, "album": song.album],
+            responseType: SongPreviewResponse.self,
+            includeResponseString: false
+        )
+        
+        return response.songPreviewUrl
+    }
+    
+    func stopPreview() {
+        player?.pause()
+        player = nil
+        error = nil
+        currentlyPlayingSongId = nil
+        try? AVAudioSession.sharedInstance().setActive(false)
+    }
+    
+    func playPreview(from urlString: String, for song: Song) async {
+        guard let url = URL(string: urlString) else {
+            error = "Could not play preview"
+            return
+        }
+        
+        stopPreview()
+        
+        do {
+            // Configure audio session to ignore silent switch
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setActive(true)
+            
+            let playerItem = AVPlayerItem(url: url)
+            player = AVPlayer(playerItem: playerItem)
+            player?.play()
+            
+            currentlyPlayingSongId = song.id
+            
+            // Observe playback end
+            NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime,
+                object: player?.currentItem,
+                queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor in
+                    self?.stopPreview()
+                }
+            }
+        } catch {
+            player = nil
+            self.error = "Could not play preview"
+        }
     }
     
 }

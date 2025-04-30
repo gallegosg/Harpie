@@ -17,7 +17,9 @@ class RewardedViewModel: NSObject, ObservableObject, FullScreenContentDelegate {
                 with: K.adUnitId, request: Request())
             rewardedAd?.fullScreenContentDelegate = self
         } catch {
-            print("Failed to load rewarded ad with error: \(error.localizedDescription)")
+            await ErrorLogger.logError(userId: "n/a", source: "RewardedViewModel", code: "loadAd", message: "\(error)")
+            print("Ad failed to load")
+            print(error)
         }
     }
     

@@ -45,7 +45,7 @@ struct APIService {
             }
             
             responseString = String(data: data, encoding: .utf8)
-            
+
             if (200...299).contains(httpResponse.statusCode) {
                 let decodedResponse = try JSONDecoder().decode(T.self, from: data)
                 return (decodedResponse, responseString)

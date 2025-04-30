@@ -10,7 +10,8 @@ import SwiftUI
 struct PlaylistView: View {
     @StateObject var vm: HomeViewModel
     @State private var appearedItems: Set<UUID> = []
-    @State private var newItems: Set<UUID> = []
+    @State private var previousPlaylistCount = 0 // Add this to your view
+    
     var body: some View {
         VStack {
             if vm.spotifyLoading {
@@ -32,7 +33,7 @@ struct PlaylistView: View {
                             ScrollView {
                                 ForEach(vm.playlist) { song in
                                     if let index = vm.playlist.firstIndex(of: song) {
-                                        SongView(song: $vm.playlist[index])
+                                        SongView(homeVM: vm, song: $vm.playlist[index])
                                             .opacity(appearedItems.contains(song.id) ? 1 : 0)
                                             .offset(y: appearedItems.contains(song.id) ? 0 : 20)
                                             .onAppear {
@@ -47,16 +48,31 @@ struct PlaylistView: View {
                                 }
                             }
                             .scrollIndicators(.hidden)
-                            .onReceive(vm.$playlist, perform: { _ in
-                                if let lastSong = vm.playlist.last, vm.moreCount != 0 {
-                                    withAnimation(.smooth(duration: 1)) {
-                                        proxy.scrollTo(lastSong.id, anchor: .bottom)
+                            .onReceive(vm.$playlist) { newPlaylist in
+                                let currentCount = newPlaylist.count
+                                if currentCount > previousPlaylistCount && vm.moreCount != 0 {
+                                    if let lastSong = newPlaylist.last {
+                                        withAnimation(.smooth(duration: 1)) {
+                                            proxy.scrollTo(lastSong.id, anchor: .bottom)
+                                        }
                                     }
                                 }
-                            })
+                                previousPlaylistCount = currentCount // Update the previous count
+                            }
                         }
                     }
                     
+                    HStack(spacing: 15) {
+                        Text("Available on")
+                            .font(.footnote)
+                            .foregroundColor(.white)
+                        
+                        Image("Spotify")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 25)
+                    }
+                        
                     HStack(alignment: .top) {
                         Spacer()
                         ActionButton(action: {
